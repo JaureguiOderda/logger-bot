@@ -1,12 +1,28 @@
-FROM python:3.14-slim
+# --- build stage ---
+FROM golang:1.26-bookworm AS build
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+# Install protoc + plugins so codegen happens in the build
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends protobuf-compiler make \
+ && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest \
+ && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Need proto/ + Makefile + source
 COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/bot ./cmd/bot
 
-RUN uv sync --locked --no-editable
+# --- runtime stage ---
+FROM gcr.io/distroless/static-debian12:nonroot
 
+ENV WHISPER_ADDR=whisper:50051
+ENV DB_PATH=/data/log.db
 
-ENTRYPOINT ["uv", "run", "--no-sync", "python", "-u", "src/logger_bot/main.py"]
+COPY --from=build /out/bot /usr/local/bin/bot
+USER nonroot:nonroot
+ENTRYPOINT ["/usr/local/bin/bot"]
