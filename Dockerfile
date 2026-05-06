@@ -13,9 +13,13 @@ RUN go mod download
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest \
  && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
-# Need proto/ + Makefile + source
+# Need proto/ + source
 COPY . .
-RUN make gen
+RUN mkdir -p /src/internal/whisper/pb \
+ && protoc -I/src/proto \
+    --go_out=/src/internal/whisper/pb      --go_opt=paths=source_relative \
+    --go-grpc_out=/src/internal/whisper/pb --go-grpc_opt=paths=source_relative \
+    /src/proto/transcribe.proto
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/bot ./cmd/bot
 
 # --- runtime stage ---
