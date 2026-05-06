@@ -15,6 +15,7 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest \
 
 # Need proto/ + Makefile + source
 COPY . .
+RUN make gen
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/bot ./cmd/bot
 
 # --- runtime stage ---
