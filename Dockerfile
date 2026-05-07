@@ -29,5 +29,4 @@ ENV WHISPER_ADDR=whisper:50051
 ENV DB_PATH=/data/log.db
 
 COPY --from=build /out/bot /usr/local/bin/bot
-USER nonroot:nonroot
 ENTRYPOINT ["/usr/local/bin/bot"]
