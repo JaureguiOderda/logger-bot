@@ -40,7 +40,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ttl.sh/loggerbot:24h
+          tags: ttl.sh/loggerbot-kimdot:24h
 
   smoke:
     needs: publish
