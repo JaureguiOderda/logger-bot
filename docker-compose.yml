@@ -5,10 +5,7 @@ services:
       MODEL_SIZE: ${MODEL_SIZE:-base}
       GRPC_PORT: "50051"
     healthcheck:
-      # Use grpc.health.v1.Health via grpc_health_probe (statically baked into the
-      # whisper image at build time would be cleaner; for now we shell out to a
-      # python one-liner that's already available).
-      test: ["CMD", "python", "-c", "import grpc; from grpc_health.v1 import health_pb2, health_pb2_grpc; ch = grpc.insecure_channel('localhost:50051'); s = health_pb2_grpc.HealthStub(ch); s.Check(health_pb2.HealthCheckRequest()); print('ok')"]
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.connect(('localhost', 50051)); s.close(); print('ok')\""]
       interval: 5s
       timeout: 3s
       retries: 30
