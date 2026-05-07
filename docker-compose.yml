@@ -1,6 +1,6 @@
 services:
   whisper:
-    image: ttl.sh/loggerbot-whisper:24h
+    image: ttl.sh/loggerbot-whisper-kimdot:24h
     environment:
       MODEL_SIZE: ${MODEL_SIZE:-base}
       GRPC_PORT: "50051"
@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   bot:
-    image: ttl.sh/loggerbot:24h
+    image: ttl.sh/loggerbot-kimdot:24h
     depends_on:
       whisper:
         condition: service_healthy
